@@ -48,6 +48,21 @@
   .bot b{color:var(--coral-dark)}
   .chat .who{font-size:.75rem;color:var(--muted);margin-bottom:4px}
 
+  .chat{display:flex;flex-direction:column;gap:10px}
+  .chat-head{font-family:Fredoka,Inter,sans-serif;font-weight:600;font-size:1.1rem;display:flex;align-items:center;gap:8px}
+  .chat-head .dot{width:10px;height:10px;border-radius:50%;background:#2BB673;box-shadow:0 0 0 3px #D8F5E6}
+  .msgs{max-height:360px;min-height:160px;overflow-y:auto;display:flex;flex-direction:column}
+  .bubble a{color:var(--coral-dark);font-weight:600}
+  .bubble.typing{opacity:.6;font-style:italic}
+  .suggest{display:flex;flex-wrap:wrap;gap:6px}
+  .suggest button{font:inherit;font-size:.82rem;background:#F4EFFF;color:var(--ink);border:none;border-radius:999px;padding:6px 12px;cursor:pointer}
+  .suggest button:hover{background:var(--lime)}
+  .ask{display:flex;gap:8px}
+  .ask input{flex:1;min-width:0;padding:12px 16px;border-radius:999px;border:1.5px solid var(--line);font:inherit;font-size:1rem;background:#fff;color:var(--ink)}
+  .ask input:focus{outline:none;border-color:var(--coral)}
+  .ask .btn{padding:12px 20px}
+  .ask .btn:disabled{opacity:.6;cursor:wait}
+
   /* Sections */
   section{padding:70px 0}
   .center{text-align:center}
@@ -120,13 +135,21 @@
         <a class="btn ghost" href="#how">How it works</a>
       </div>
     </div>
-    <div class="chat" aria-label="Example conversation">
-      <div class="who" style="text-align:right">You</div>
-      <div class="bubble you">I want to make a reel with a voiceover, but I hate hearing my own voice 😅</div>
-      <div class="who">MatchMyBot</div>
-      <div class="bubble bot">Perfect match: <b>ElevenLabs</b> for a natural-sounding AI voice, then <b>CapCut</b> to add auto-captions and edit. Write the script first with <b>Claude</b> or <b>ChatGPT</b>. 💘</div>
-      <div class="bubble you">Wait, that's it?</div>
-      <div class="bubble bot">That's it. Three tools, one reel, no awkward voice. 🎬</div>
+    <div class="chat" aria-label="Ask MatchMyBot">
+      <div class="chat-head"><span class="dot"></span> Ask the matchmaker</div>
+      <div class="msgs" id="msgs" aria-live="polite">
+        <div class="who">MatchMyBot</div>
+        <div class="bubble bot">Hi! Tell me what you want to make and I'll find your perfect AI match. 💘</div>
+      </div>
+      <div class="suggest" id="suggest">
+        <button type="button">Voiceover for my reels</button>
+        <button type="button">Turn blog posts into TikToks</button>
+        <button type="button">Make YouTube thumbnails</button>
+      </div>
+      <form class="ask" id="ask">
+        <input id="q" maxlength="600" autocomplete="off" placeholder="What do you want to make?" aria-label="Your question">
+        <button class="btn" type="submit" id="send">Ask</button>
+      </form>
     </div>
   </header>
 </div>
@@ -243,6 +266,37 @@ document.getElementById('form').addEventListener('submit',e=>{
   e.target.style.display='none';
   document.getElementById('thanks').style.display='block';
 });
+const API='https://matchmybot-chat.denise-rena-frank.workers.dev/';
+const msgsEl=document.getElementById('msgs'), askEl=document.getElementById('ask'), qEl=document.getElementById('q'), sendEl=document.getElementById('send');
+let history=[];
+function md(t){
+  t=t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  t=t.replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g,'<a href="$2" target="_blank" rel="noopener sponsored">$1</a>');
+  t=t.replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');
+  return t.replace(/\n/g,'<br>');
+}
+function addMsg(role,html){
+  const who=document.createElement('div'); who.className='who'; who.textContent=role==='user'?'You':'MatchMyBot';
+  if(role==='user') who.style.textAlign='right';
+  const b=document.createElement('div'); b.className='bubble '+(role==='user'?'you':'bot'); b.innerHTML=html;
+  msgsEl.append(who,b); msgsEl.scrollTop=msgsEl.scrollHeight; return b;
+}
+async function ask(q){
+  q=q.trim(); if(!q||sendEl.disabled) return;
+  addMsg('user',md(q)); history.push({role:'user',content:q}); qEl.value='';
+  sendEl.disabled=true;
+  const t=addMsg('bot','Finding your match…'); t.classList.add('typing');
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:history.slice(-8)})});
+    const d=await r.json();
+    const reply=d.reply||d.error||'Something went sideways. Try again in a minute.';
+    t.classList.remove('typing'); t.innerHTML=md(reply);
+    if(d.reply) history.push({role:'assistant',content:d.reply}); else history.pop();
+  }catch(e){ t.classList.remove('typing'); t.textContent="I couldn't connect just now. Try again in a minute."; history.pop(); }
+  sendEl.disabled=false; msgsEl.scrollTop=msgsEl.scrollHeight;
+}
+askEl.addEventListener('submit',e=>{e.preventDefault();ask(qEl.value);});
+document.querySelectorAll('#suggest button').forEach(b=>b.onclick=()=>ask(b.textContent));
 document.getElementById('yr').textContent=new Date().getFullYear();
 </script>
 </body>
