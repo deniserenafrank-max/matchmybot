@@ -86,6 +86,8 @@
   .results{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;max-width:860px;margin:0 auto;min-height:40px}
   .match{background:#fff;color:var(--ink);border-radius:18px;padding:20px;animation:pop .25s ease}
   .match .name{font-family:Fredoka;font-weight:700;font-size:1.2rem}
+  .match .name a{text-decoration:none;color:var(--ink)}
+  .match .name a:hover{color:var(--coral-dark)}
   .match .why{color:var(--muted);font-size:.93rem;margin-top:4px}
   .match .badge{display:inline-block;font-size:.72rem;font-weight:600;background:#FFE7E3;color:var(--coral-dark);padding:3px 10px;border-radius:999px;margin-bottom:8px}
   .hint{color:#C9CBE0;text-align:center;font-size:.9rem;margin-top:22px}
@@ -245,6 +247,14 @@ const MATCHES = {
     ["Buffer","Simple scheduling for multiple social accounts."]
   ]
 };
+const LINKS = {
+  "ElevenLabs":"https://try.elevenlabs.io/2vz334gfiav4",
+  "Descript":"https://www.descript.com","Canva":"https://www.canva.com","Runway":"https://runwayml.com",
+  "Buffer":"https://buffer.com","Suno":"https://suno.com","Metricool":"https://metricool.com",
+  "Perplexity":"https://www.perplexity.ai","CapCut":"https://www.capcut.com","Kling":"https://klingai.com",
+  "Udio":"https://www.udio.com","Claude":"https://claude.ai","ChatGPT":"https://chatgpt.com",
+  "Midjourney":"https://www.midjourney.com","Google Veo":"https://deepmind.google/models/veo/"
+};
 const chips = document.getElementById('chips');
 const results = document.getElementById('results');
 Object.keys(MATCHES).forEach((task,i)=>{
@@ -259,7 +269,7 @@ function show(task,btn){
   btn.classList.add('on');
   results.innerHTML = MATCHES[task].map(([n,w],i)=>
     '<div class="match"><span class="badge">'+(i===0?'💘 Top match':'Also a great fit')+'</span>'+
-    '<div class="name">'+n+'</div><div class="why">'+w+'</div></div>').join('');
+    '<div class="name">'+(LINKS[n]?'<a href="'+LINKS[n]+'" target="_blank" rel="noopener sponsored">'+n+' ↗</a>':n)+'</div><div class="why">'+w+'</div></div>').join('');
 }
 document.getElementById('form').addEventListener('submit',e=>{
   e.preventDefault();
@@ -271,7 +281,7 @@ const msgsEl=document.getElementById('msgs'), askEl=document.getElementById('ask
 let history=[];
 function md(t){
   t=t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-  t=t.replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g,'<a href="$2" target="_blank" rel="noopener sponsored">$1</a>');
+  t=t.replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g,(m,txt,url)=>'<a href="'+(LINKS[txt]||url)+'" target="_blank" rel="noopener sponsored">'+txt+'</a>');
   t=t.replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');
   return t.replace(/\n/g,'<br>');
 }
