@@ -5,7 +5,7 @@ const MAX_CHARS = 600;
 const MAX_TURNS = 8;
 const PER_IP_PER_HOUR = 20;
 const LINKS = {
-  "ElevenLabs": "https://elevenlabs.io", "Vista Social": "https://join.vistasocial.com/nx8y1mmfbhrg", "Later": "https://try.later.com/ecvrm6vasqxe",
+  "ElevenLabs": "https://try.elevenlabs.io/2vz334gfiav4", "Vista Social": "https://join.vistasocial.com/nx8y1mmfbhrg", "Later": "https://try.later.com/ecvrm6vasqxe",
   "Descript": "https://www.descript.com",
   "Canva": "https://www.canva.com",
   "Runway": "https://runwayml.com",
