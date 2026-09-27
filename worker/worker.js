@@ -11,7 +11,7 @@ const LINKS = {
   "Runway": "https://runwayml.com",
   "Buffer": "https://buffer.com",
   "Suno": "https://suno.com",
-  "Metricool": "https://metricool.com",
+  "Metricool": "https://i.mtr.cool/matchmybot",
   "Perplexity": "https://www.perplexity.ai",
   "CapCut": "https://www.capcut.com",
   "Kling": "https://klingai.com",
